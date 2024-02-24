@@ -1,0 +1,6 @@
+@dio_project_net_api_tarefas_HostAddress = http://localhost:5008
+
+GET {{dio_project_net_api_tarefas_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
