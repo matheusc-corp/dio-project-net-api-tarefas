@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using dio_project_net_api_tarefas.Context;
+using dio_project_net_api_tarefas.Dto;
 using dio_project_net_api_tarefas.Models;
 using dio_project_net_api_tarefas.ModelViews;
 using Microsoft.AspNetCore.Mvc;
@@ -26,10 +27,16 @@ namespace dio_project_net_api_tarefas.Controllers
         }
 
         [HttpPost()]
-        public IActionResult Create([FromBody] Tarefa tarefa){
+        public IActionResult Create([FromBody] TarefaDto tarefadto){
 
-            if(string.IsNullOrEmpty(tarefa.Titulo))
+            if(string.IsNullOrEmpty(tarefadto.Titulo))
                 return StatusCode(404, new ErrorView{ Mensagem = "O titulo é obrigatório"});
+
+            var tarefa = new Tarefa{
+                Titulo = tarefadto.Titulo,
+                Descricao = tarefadto.Descricao,
+                Concluida = tarefadto.Concluida
+            };
 
             _context.Tarefas.Add(tarefa);
             _context.SaveChanges();
@@ -38,19 +45,19 @@ namespace dio_project_net_api_tarefas.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update([FromBody] Tarefa tarefa, [FromRoute] int id)
+        public IActionResult Update([FromBody] TarefaDto tarefadto, [FromRoute] int id)
         {
             var tarefaBanco = _context.Tarefas.Find(id);
 
             if(tarefaBanco == null)
                 return StatusCode(404, new ErrorView{ Mensagem = $"A tarefa não foi encontrada pelo id {id}"});
 
-            if(string.IsNullOrEmpty(tarefa.Titulo))
+            if(string.IsNullOrEmpty(tarefadto.Titulo))
                 return StatusCode(404, new ErrorView{ Mensagem = "O titulo é obrigatório"});
 
-            tarefaBanco.Titulo = tarefa.Titulo;
-            tarefaBanco.Descricao = tarefa.Descricao;
-            tarefaBanco.Concluida = tarefa.Concluida;
+            tarefaBanco.Titulo = tarefadto.Titulo;
+            tarefaBanco.Descricao = tarefadto.Descricao;
+            tarefaBanco.Concluida = tarefadto.Concluida;
 
             _context.Tarefas.Update(tarefaBanco);
             _context.SaveChanges();
