@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using dio_project_net_api_tarefas.Context;
 using dio_project_net_api_tarefas.Dto;
 using dio_project_net_api_tarefas.Models;
+using dio_project_net_api_tarefas.Models.Erros;
 using dio_project_net_api_tarefas.ModelViews;
+using dio_project_net_api_tarefas.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace dio_project_net_api_tarefas.Controllers
@@ -14,78 +16,66 @@ namespace dio_project_net_api_tarefas.Controllers
     [Route("/tarefas")]
     public class TarefasController : ControllerBase
     {
-        private TarefasContext _context;
-        public TarefasController(TarefasContext context){
-            _context = context;
+        private TarefaService _service;
+        public TarefasController(TarefaService service){
+            _service = service;
         }
 
         [HttpGet()]
         public IActionResult Index(){
-            var tarefas = _context.Tarefas.ToList();
+            var tarefas = _service.ListarTarefas();
 
             return StatusCode(200, tarefas);
         }
 
         [HttpPost()]
         public IActionResult Create([FromBody] TarefaDto tarefadto){
+            try{
+                var tarefa = _service.Incluir(tarefadto);
 
-            if(string.IsNullOrEmpty(tarefadto.Titulo))
-                return StatusCode(404, new ErrorView{ Mensagem = "O titulo é obrigatório"});
+                return StatusCode(201, tarefa);
+            }
+            catch(TarefaError e){
+                return StatusCode(400, new ErrorView { Mensagem = e.Message});
+            }
 
-            var tarefa = new Tarefa{
-                Titulo = tarefadto.Titulo,
-                Descricao = tarefadto.Descricao,
-                Concluida = tarefadto.Concluida
-            };
-
-            _context.Tarefas.Add(tarefa);
-            _context.SaveChanges();
-
-            return StatusCode(201, tarefa);            
+            
         }
 
         [HttpPut("{id}")]
         public IActionResult Update([FromBody] TarefaDto tarefadto, [FromRoute] int id)
         {
-            var tarefaBanco = _context.Tarefas.Find(id);
-
-            if(tarefaBanco == null)
-                return StatusCode(404, new ErrorView{ Mensagem = $"A tarefa não foi encontrada pelo id {id}"});
-
-            if(string.IsNullOrEmpty(tarefadto.Titulo))
-                return StatusCode(404, new ErrorView{ Mensagem = "O titulo é obrigatório"});
-
-            tarefaBanco.Titulo = tarefadto.Titulo;
-            tarefaBanco.Descricao = tarefadto.Descricao;
-            tarefaBanco.Concluida = tarefadto.Concluida;
-
-            _context.Tarefas.Update(tarefaBanco);
-            _context.SaveChanges();
-
-            return StatusCode(200, tarefaBanco);
+            try{
+                var tarefaBanco = _service.Alterar(tarefadto, id);
+                
+                return StatusCode(200, tarefaBanco);
+            }
+            catch(TarefaError e){
+                return StatusCode(400, new ErrorView { Mensagem = e.Message});
+            }            
         }
 
         [HttpGet("{id}")]
         public IActionResult Show([FromRoute] int id){
-            var tarefa = _context.Tarefas.Find(id);
-
-            if(tarefa == null)
-                return StatusCode(404, new ErrorView{ Mensagem = $"A tarefa não foi encontrada pelo id {id}"});
-
-            return StatusCode(200, tarefa);
+            try{
+                var tarefa = _service.BuscaPorId(id);
+                return StatusCode(200, tarefa);
+            }
+            catch(TarefaError e){
+                return StatusCode(404, new ErrorView{ Mensagem = e.Message});
+            }            
         }
 
         [HttpDelete("{id}")]
         public IActionResult Delete([FromRoute] int id){
-            var tarefa = _context.Tarefas.Find(id);
+            try{
+                _service.Deletar(id);
 
-            if(tarefa == null)
-                return StatusCode(404, new ErrorView{ Mensagem = $"A tarefa não foi encontrada pelo id {id}"});
-
-            _context.Tarefas.Remove(tarefa);
-            _context.SaveChanges();
-            return StatusCode(204);
-        }
-        
+                return StatusCode(204);
+            }
+            catch(TarefaError e){
+                return StatusCode(404, new ErrorView{ Mensagem = e.Message});
+            }
+        }        
     }
 }
