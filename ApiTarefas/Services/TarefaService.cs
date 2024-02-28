@@ -6,10 +6,11 @@ using dio_project_net_api_tarefas.Context;
 using dio_project_net_api_tarefas.Dto;
 using dio_project_net_api_tarefas.Models;
 using dio_project_net_api_tarefas.Models.Erros;
+using dio_project_net_api_tarefas.Services.Interfaces;
 
 namespace dio_project_net_api_tarefas.Services
 {
-    public class TarefaService
+    public class TarefaService : ITarefaService
     {
         public TarefaService(TarefasContext context){
             _context = context;
@@ -17,8 +18,12 @@ namespace dio_project_net_api_tarefas.Services
 
         private TarefasContext _context;
 
-        public List<Tarefa> ListarTarefas(){
-            return _context.Tarefas.ToList();
+        public List<Tarefa> ListarTarefas(int page){
+            if(page < 1) page = 1;
+            
+            int limit = 10;
+            int offset = (page - 1) * limit;
+            return _context.Tarefas.Skip(offset).Take(limit).ToList();
         }
 
         public Tarefa Incluir(TarefaDto tarefaDto){
