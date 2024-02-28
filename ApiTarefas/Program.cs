@@ -1,12 +1,13 @@
 using dio_project_net_api_tarefas.Context;
 using dio_project_net_api_tarefas.Services;
+using dio_project_net_api_tarefas.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddScoped<TarefaService>();
+builder.Services.AddScoped<ITarefaService, TarefaService>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
