@@ -8,6 +8,7 @@ using dio_project_net_api_tarefas.Models;
 using dio_project_net_api_tarefas.Models.Erros;
 using dio_project_net_api_tarefas.ModelViews;
 using dio_project_net_api_tarefas.Services;
+using dio_project_net_api_tarefas.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace dio_project_net_api_tarefas.Controllers
@@ -16,14 +17,14 @@ namespace dio_project_net_api_tarefas.Controllers
     [Route("/tarefas")]
     public class TarefasController : ControllerBase
     {
-        private TarefaService _service;
-        public TarefasController(TarefaService service){
+        private ITarefaService _service;
+        public TarefasController(ITarefaService service){
             _service = service;
         }
 
         [HttpGet()]
-        public IActionResult Index(){
-            var tarefas = _service.ListarTarefas();
+        public IActionResult Index(int page = 1){
+            var tarefas = _service.ListarTarefas(page);
 
             return StatusCode(200, tarefas);
         }
